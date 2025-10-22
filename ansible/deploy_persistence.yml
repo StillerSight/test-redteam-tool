@@ -27,7 +27,7 @@
 
     - name: 2. Deploy Persistence Payload Script ({{ payload_script_name }})
       ansible.builtin.template:
-        src: templates/multi_user_persistence.sh.j2
+        src: templates/user_persistence.sh.j2
         dest: "{{ payload_dir }}/{{ payload_script_name }}"
         mode: '0700' 
 
