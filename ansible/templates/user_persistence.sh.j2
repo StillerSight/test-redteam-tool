@@ -1,0 +1,15 @@
+#!/bin/bash
+# Jared Korwatch
+# jmk9339@rit.edu
+# This file ensures that Red Team SSH public keys stay present on the target machine
+# in the victim user accounts, running from systemd
+
+# temp file for testing
+TEST_OUTPUT_FILE="/tmp/systemd_test_output.log"
+TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+
+# print to temp file
+echo "$TIMESTAMP - Systemd Test Run Successful. Service is active." >> "$TEST_OUTPUT_FILE"
+
+
+exit 0
