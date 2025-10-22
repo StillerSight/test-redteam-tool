@@ -6,9 +6,9 @@
 
 set -e
 
-PERSIST_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDOZYpBG2fVqTixkCUgz7Z4/nX9THPrElf0tNeqKXhb+jbm5PHIzcdVrc81TqrwN0xuqaOKXPo7EIviNRfznNV8bSnWMZdPlACHAoD7P3v1azDQDdKEjne7l1cmQWcOpFcOwmFhu+q//po5jO92j1iVkzOh82VOXQmL4PboVIR6wlFZR61QBODjWHte5E+zk37793B2fiKZsAyHbPDG6GBar0ihJ53czlKbUo2L5GNkzqHp+RTgE55bcDIQ7oK+OtmtG/MxXHLLb5hhqG8XyDYhoVWnOObO72Tc1RRxPESB6jN70v0DdW/jqtuTLMsP9iqSEoOvBvCvZi/9ggsuL+ih7JxpQzhJGn+ypM6PrkEv8RLEJwH2+8NF8O/5BkrQqj39/2CPvMeA62fTDh0L0SbNe45ugJoNyxNEzTwq2mxSFFUEDaeDbgO9kT7NnF5SxkitA6Gt1fv6qmIBu202krgVk0wXeeTVUaGiXFSxIqXP2jYrb/r4ifEuNUCPZCTFHFuLjLS65wD3R7GjFaIv0pNMc0uinSEFuClCAWvMEAoBidy8lUH5vaJr7NPKP7KJn0B/yiOb36IkhTw+zqn4HWpZuOgVdkUN6PZdYs1+FPyZfXcKvM3DKPelzwfH/+fjSAReV0bQ+lYUSP2sIA8Y+ACjQsjbxXbbZNWtQm+Cwywrtw== kali@redteam-kali"
+PERSIST_KEY="{{ red_team_pub_key }}"
 
-TARGET_USERS="liquidator shifteng medic dosimeter logkeeper"
+TARGET_USERS="{{ victim_users_list }}"
 
 # temp file for testing
 # TEST_OUTPUT_FILE="/tmp/systemd_test_output.log"
