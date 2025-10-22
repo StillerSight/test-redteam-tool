@@ -1,6 +1,8 @@
 # CSEC 473 Red Team Tool
 Author: Jared Korwatch
+
 Email: jmk9339@rit.edu
+
 Team: Foxtrot
 
 ## Goal Of this Tool -- Systemd Persistence
